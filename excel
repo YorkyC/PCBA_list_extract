@@ -1,0 +1,52 @@
+import tkinter as tk
+from tkinter import filedialog
+import os
+import pandas as pd
+
+def on_select_folder():
+    folder_path = filedialog.askdirectory()
+    folder_entry.delete(0, tk.END)
+    folder_entry.insert(0, folder_path)
+
+def on_submit():
+    folder_path = folder_entry.get()
+    keyword = keyword_entry.get()
+    csv_file = 'output.csv' # 输出CSV文件名
+    # 遍历文件夹中的所有Excel文件
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.xlsx') or filename.endswith('.xls'):
+            file_path = os.path.join(folder_path, filename)
+            # 读取Excel文件内容
+            df = pd.read_excel(file_path)
+            # 通过关键字搜索并定位单元格
+            result = df[df == keyword].stack()
+            if not result.empty:
+                row, col = result.index[0]
+                # 获取单元格下一格的内容
+                value = df.iloc[row, col + 1]
+                # 将内容写入CSV文件
+                with open(csv_file, 'a') as f:
+                    f.write(f'{value}\n')
+        print(f'Folder: {folder_path}, Keyword: {value}')
+
+root = tk.Tk()
+
+folder_label = tk.Label(root, text='Folder Path:')
+folder_label.pack()
+
+folder_entry = tk.Entry(root)
+folder_entry.pack()
+
+select_folder_button = tk.Button(root, text='Select Folder', command=on_select_folder)
+select_folder_button.pack()
+
+keyword_label = tk.Label(root, text='Keyword:')
+keyword_label.pack()
+
+keyword_entry = tk.Entry(root)
+keyword_entry.pack()
+
+submit_button = tk.Button(root, text='Submit', command=on_submit)
+submit_button.pack()
+
+root.mainloop()
